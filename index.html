@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="SneakerTrend - интернет-магазин модной обуви, одежды, аксессуаров и электроники.">
+    <title>SneakerTrend - Интернет-магазин</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .fade-in { opacity: 0; transform: translateY(20px); animation: fadeIn 0.6s ease forwards; }
+        @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
+        .card:hover { transform: scale(1.05); transition: transform 0.3s ease; }
+        .btn:hover { background-color: #1f2937; transition: background-color 0.3s ease; }
+        .nav-link:hover { color: #1f2937; transition: color 0.3s ease; }
+        #search-input:focus { border-color: #1f2937; box-shadow: 0 0 0 3px rgba(31, 41, 55, 0.2); transition: all 0.3s ease; }
+        .highlight { border: 2px solid #1f2937; background-color: rgba(31, 41, 55, 0.05); }
+        .search-btn:hover { transform: scale(1.1); transition: transform 0.2s ease; }
+        #autocomplete-list { position: absolute; background: white; border: 1px solid #e5e7eb; border-radius: 0.5rem; max-height: 200px; overflow-y: auto; width: 100%; z-index: 100; }
+        #autocomplete-list div { padding: 0.5rem; cursor: pointer; }
+        #autocomplete-list div:hover { background-color: #f3f4f6; }
+        .notification { position: fixed; top: 20px; right: 20px; padding: 1rem; border-radius: 0.5rem; z-index: 1000; }
+        .notification.success { background-color: #10b981; color: white; }
+        .notification.error { background-color: #ef4444; color: white; }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans">
+    <!-- Навигация -->
+    <nav class="bg-white shadow-md p-4 sticky top-0 z-50">
+        <div class="container mx-auto flex flex-wrap justify-between items-center">
+            <h1 class="text-2xl font-bold text-gray-800">SneakerTrend</h1>
+            <div class="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-4 mt-2 md:mt-0 w-full md:w-auto">
+                <ul class="flex flex-wrap space-x-4">
+                    <li><a href="index.html" class="nav-link text-gray-800 font-bold">Главная</a></li>
+                    <li><a href="sneakers.html" class="nav-link text-gray-600 hover:text-gray-800">Кроссовки</a></li>
+                    <li><a href="clothing.html" class="nav-link text-gray-600 hover:text-gray-800">Одежда</a></li>
+                    <li><a href="hats.html" class="nav-link text-gray-600 hover:text-gray-800">Головные уборы</a></li>
+                    <li><a href="phones.html" class="nav-link text-gray-600 hover:text-gray-800">Телефоны и гаджеты</a></li>
+                    <li><a href="computers.html" class="nav-link text-gray-600 hover:text-gray-800">Компьютеры</a></li>
+                    <li><a href="#reviews" class="nav-link text-gray-600 hover:text-gray-800">Отзывы</a></li>
+                    <li><a href="#about" class="nav-link text-gray-600 hover:text-gray-800">О нас</a></li>
+                    <li><a href="#contact" class="nav-link text-gray-600 hover:text-gray-800">Контакты</a></li>
+                    <li><button onclick="openCart()" class="text-gray-600 hover:text-gray-800">Корзина (<span id="cart-count">0</span>)</button></li>
+                </ul>
+                <div class="relative flex items-center w-full md:w-64 mt-2 md:mt-0">
+                    <input type="text" id="search-input" placeholder="Поиск товаров..." class="w-full p-2 pl-10 rounded-lg border border-gray-300 focus:outline-none">
+                    <svg class="absolute left-3 top-2.5 w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                    <button onclick="searchProducts()" class="ml-2 search-btn bg-gray-800 text-white p-2 rounded-lg">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </button>
+                    <div id="autocomplete-list" class="hidden"></div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Герой-секция -->
+    <section class="bg-cover bg-center h-96 flex items-center justify-center" style="background-image: url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070&auto=format&fit=crop')">
+        <div class="text-center text-white">
+            <h1 class="text-4xl md:text-5xl font-bold mb-4">Добро пожаловать в SneakerTrend</h1>
+            <p class="text-lg md:text-xl mb-6">Найдите лучшие кроссовки, одежду, аксессуары и электронику!</p>
+            <a href="#products" class="btn bg-gray-800 text-white px-6 py-3 rounded-lg">Посмотреть товары</a>
+        </div>
+    </section>
+
+    <!-- Секция категорий -->
+    <section id="categories" class="py-12">
+        <div class="container mx-auto">
+            <h2 class="text-3xl font-bold text-center mb-8">Категории</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="card bg-white rounded-lg shadow-lg p-6 fade-in">
+                    <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070&auto=format&fit=crop" alt="Кроссовки" class="w-full h-48 object-cover rounded-md mb-4">
+                    <h3 class="text-xl font-semibold">Кроссовки</h3>
+                    <p class="text-gray-600 mb-4">Стильные и удобные кроссовки для всех.</p>
+                    <a href="sneakers.html" class="btn bg-gray-800 text-white px-4 py-2 rounded-lg">Перейти</a>
+                </div>
+                <div class="card bg-white rounded-lg shadow-lg p-6 fade-in" style="animation-delay: 0.2s;">
+                    <img src="https://images.unsplash.com/photo-1575537302964-96cd47c06b1b?q=80&w=2070&auto=format&fit=crop" alt="Одежда" class="w-full h-48 object-cover rounded-md mb-4">
+                    <h3 class="text-xl font-semibold">Одежда</h3>
+                    <p class="text-gray-600 mb-4">Модная одежда для повседневной жизни.</p>
+                    <a href="clothing.html" class="btn bg-gray-800 text-white px-4 py-2 rounded-lg">Перейти</a>
+                </div>
+                <div class="card bg-white rounded-lg shadow-lg p-6 fade-in" style="animation-delay: 0.4s;">
+                    <img src="https://images.unsplash.com/photo-1508606572321-901ea443707f?q=80&w=2070&auto=format&fit=crop" alt="Головные уборы" class="w-full h-48 object-cover rounded-md mb-4">
+                    <h3 class="text-xl font-semibold">Головные уборы</h3>
+                    <p class="text-gray-600 mb-4">Кепки, шапки и панамы на любой вкус.</p>
+                    <a href="hats.html" class="btn bg-gray-800 text-white px-4 py-2 rounded-lg">Перейти</a>
+                </div>
+                <div class="card bg-white rounded-lg shadow-lg p-6 fade-in" style="animation-delay: 0.6s;">
+                    <img src="https://images.unsplash.com/photo-1611162617210-7d673bf0f2a4?q=80&w=2070&auto=format&fit=crop" alt="Телефоны и гаджеты" class="w-full h-48 object-cover rounded-md mb-4">
+                    <h3 class="text-xl font-semibold">Телефоны и гаджеты</h3>
+                    <p class="text-gray-600 mb-4">Современные устройства для связи и развлечений.</p>
+                    <a href="phones.html" class="btn bg-gray-800 text-white px-4 py-2 rounded-lg">Перейти</a>
+                </div>
+                <div class="card bg-white rounded-lg shadow-lg p-6 fade-in" style="animation-delay: 0.8s;">
+                    <img src="https://images.unsplash.com/photo-1618424181497-157f25b6ddd5?q=80&w=2070&auto=format&fit=crop" alt="Компьютеры" class="w-full h-48 object-cover rounded-md mb-4">
+                    <h3 class="text-xl font-semibold">Компьютеры</h3>
+                    <p class="text-gray-600 mb-4">Мощные ПК и аксессуары для работы и игр.</p>
+                    <a href="computers.html" class="btn bg-gray-800 text-white px-4 py-2 rounded-lg">Перейти</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Секция товаров -->
+    <section id="products" class="py-12 bg-gray-50">
+        <div class="container mx-auto">
+            <h2 class="text-3xl font-bold text-center mb-8">Популярные товары</h2>
+            <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+        </div>
+    </section>
+
+    <!-- Секция отзывов -->
+    <section id="reviews" class="py-12">
+        <div class="container mx-auto">
+            <h2 class="text-3xl font-bold text-center mb-8">Отзывы</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="bg-white rounded-lg shadow-lg p-6 fade-in">
+                    <p class="text-gray-600 mb-4">"Отличный магазин! Кроссовки пришли быстро, качество супер!"</p>
+                    <p class="font-semibold">Анна, Москва</p>
+                </div>
+                <div class="bg-white rounded-lg shadow-lg p-6 fade-in" style="animation-delay: 0.2s;">
+                    <p class="text-gray-600 mb-4">"Заказал ноутбук, всё работает идеально. Рекомендую!"</p>
+                    <p class="font-semibold">Игорь, Санкт-Петербург</p>
+                </div>
+                <div class="bg-white rounded-lg shadow-lg p-6 fade-in" style="animation-delay: 0.4s;">
+                    <p class="text-gray-600 mb-4">"Кепки стильные, цены приятные. Буду заказывать ещё!"</p>
+                    <p class="font-semibold">Мария, Екатеринбург</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Секция о нас -->
+    <section id="about" class="py-12 bg-gray-50">
+        <div class="container mx-auto text-center">
+            <h2 class="text-3xl font-bold mb-8">О нас</h2>
+            <p class="text-gray-600 max-w-2xl mx-auto">SneakerTrend - это ваш надёжный магазин модной обуви, одежды, аксессуаров и электроники. Мы предлагаем только качественные товары от лучших брендов. Наша миссия - сделать шопинг удобным и приятным!</p>
+        </div>
+    </section>
+
+    <!-- Секция контактов с формой -->
+    <section id="contact" class="py-12">
+        <div class="container mx-auto">
+            <h2 class="text-3xl font-bold text-center mb-8">Свяжитесь с нами</h2>
+            <div class="max-w-lg mx-auto bg-white rounded-lg shadow-lg p-6">
+                <form id="contact-form" action="contact-form-process.php" method="post">
+                    <div class="mb-4">
+                        <label for="name" class="block text-gray-700 font-semibold mb-2">Ваше имя</label>
+                        <input type="text" id="name" name="name" class="w-full p-2 rounded-lg border border-gray-300 focus:outline-none focus:border-gray-800" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="email" class="block text-gray-700 font-semibold mb-2">Ваш email</label>
+                        <input type="email" id="email" name="email" class="w-full p-2 rounded-lg border border-gray-300 focus:outline-none focus:border-gray-800" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="message" class="block text-gray-700 font-semibold mb-2">Сообщение</label>
+                        <textarea id="message" name="message" rows="5" class="w-full p-2 rounded-lg border border-gray-300 focus:outline-none focus:border-gray-800" required></textarea>
+                    </div>
+                    <button type="submit" class="btn bg-gray-800 text-white px-4 py-2 rounded-lg w-full hover:bg-gray-900">Отправить сообщение</button>
+                </form>
+                <div class="mt-6 text-center text-gray-600">
+                    <p class="mb-2">Email: <a href="mailto:support@sneakertrend.ru" class="text-gray-800 hover:underline">support@sneakertrend.ru</a></p>
+                    <p class="mb-2">Телефон: +7 (495) 123-45-67</p>
+                    <p>Адрес: г. Москва, ул. Трендовая, д. 123</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Модальное окно корзины -->
+    <div id="cart-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-lg max-w-md w-full">
+            <h2 class="text-2xl font-bold mb-4">Корзина</h2>
+            <div id="cart-items"></div>
+            <p class="text-lg font-bold mt-4">Итого: <span id="cart-total">0 ₽</span></p>
+            <div class="flex justify-end mt-6">
+                <button onclick="closeCart()" class="btn bg-gray-600 text-white px-4 py-2 rounded-lg mr-2">Закрыть</button>
+                <button class="btn bg-gray-800 text-white px-4 py-2 rounded-lg">Оформить заказ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно поиска -->
+    <div id="search-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-lg max-w-lg w-full">
+            <h2 class="text-2xl font-bold mb-4">Результаты поиска</h2>
+            <div id="search-results"></div>
+            <div class="flex justify-end mt-6">
+                <button onclick="closeSearchModal()" class="btn bg-gray-600 text-white px-4 py-2 rounded-lg">Закрыть</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Футер -->
+    <footer class="bg-gray-800 text-white py-6">
+        <div class="container mx-auto text-center">
+            <p>© 2025 SneakerTrend. Все права защищены.</p>
+            <p class="mt-2">Следите за нами: <a href="#" class="text-gray-300 hover:text-white">Instagram</a> | <a href="#" class="text-gray-300 hover:text-white">Telegram</a></p>
+        </div>
+    </footer>
+
+    <script>
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+        const allProducts = [
+            // Кроссовки
+            { id: 1, name: "Кроссовки Air Max", description: "Классические кроссовки США", price: 7990, category: "sneakers", image: "https://images.unsplash.com/photo-1600267165477-6d4cc741b379?q=80&w=2070&auto=format&fit=crop" },
+            { id: 2, name: "Кроссовки Ultra Boost", description: "Удобные кроссовки для спорта", price: 8990, category: "sneakers", image: "https://images.unsplash.com/photo-1549298916-f52e3b194a8a?q=80&w=2070&auto=format&fit=crop" },
+            { id: 3, name: "Кроссовки React", description: "Легкие кроссовки для тренировок", price: 7490, category: "sneakers", image: "https://images.unsplash.com/photo-1605408499391-6368c6ef265b?q=80&w=2070&auto=format&fit=crop" },
+            // Одежда
+            { id: 22, name: "Худи Oversize", description: "Теплое и модное худи", price: 3990, category: "clothing", image: "https://images.unsplash.com/photo-1571945153237-7b7b7e790218?q=80&w=2070&auto=format&fit=crop" },
+            { id: 23, name: "Футболка Basic", description: "Простая и стильная футболка", price: 1990, category: "clothing", image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=2070&auto=format&fit=crop" },
+            { id: 24, name: "Куртка Bomber", description: "Стильная куртка для осени", price: 5990, category: "clothing", image: "https://images.unsplash.com/photo-1604644401890-925ff4cb58e8?q=80&w=2070&auto=format&fit=crop" },
+            // Головные уборы
+            { id: 42, name: "Кепка Snapback", description: "Классическая кепка", price: 1990, category: "hats", image: "https://images.unsplash.com/photo-1508606572321-901ea443707f?q=80&w=2070&auto=format&fit=crop" },
+            { id: 43, name: "Шапка Beanie", description: "Теплая шапка для зимы", price: 1490, category: "hats", image: "https://images.unsplash.com/photo-1576871337632-b9aef4c7ab9b?q=80&w=2070&auto=format&fit=crop" },
+            { id: 44, name: "Панама Bucket", description: "Модная панама для лета", price: 1790, category: "hats", image: "https://images.unsplash.com/photo-1595878659246-91dbab9bd4df?q=80&w=2070&auto=format&fit=crop" },
+            // Телефоны и гаджеты
+            { id: 63, name: "Смартфон Pro X", description: "Мощный смартфон с камерой 108 МП", price: 49990, category: "phones", image: "https://images.unsplash.com/photo-1511707171634-5f897198f9a5?q=80&w=2070&auto=format&fit=crop" },
+            { id: 64, name: "Смартфон Lite", description: "Компактный смартфон для повседневного использования", price: 29990, category: "phones", image: "https://images.unsplash.com/photo-1512941937669-5b9eb33a6b44?q=80&w=2070&auto=format&fit=crop" },
+            { id: 65, name: "Смартфон Ultra", description: "Флагманский смартфон с большим экраном", price: 59990, category: "phones", image: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?q=80&w=2070&auto=format&fit=crop" },
+            // Компьютеры
+            { id: 83, name: "Ноутбук Pro 15", description: "Мощный ноутбук для профессионалов", price: 99990, category: "computers", image: "https://images.unsplash.com/photo-1618424181497-157f25b6ddd5?q=80&w=2070&auto=format&fit=crop" },
+            { id: 84, name: "Ноутбук Lite", description: "Легкий ноутбук для учебы", price: 49990, category: "computers", image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070&auto=format&fit=crop" },
+            { id: 85, name: "Ноутбук Gaming", description: "Игровой ноутбук с высокой производительностью", price: 129990, category: "computers", image: "https://images.unsplash.com/photo-1610116306796-6fea9f4fae38?q=80&w=2070&auto=format&fit=crop" }
+        ];
+
+        function addToCart(name, price) {
+            cart.push({ name, price });
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCart();
+        }
+
+        function updateCart() {
+            const cartItems = document.getElementById('cart-items');
+            const cartTotal = document.getElementById('cart-total');
+            const cartCount = document.getElementById('cart-count');
+            cartItems.innerHTML = '';
+            let total = 0;
+            cart.forEach(item => {
+                total += item.price;
+                const div = document.createElement('div');
+                div.className = 'flex justify-between mb-2';
+                div.innerHTML = `<span>${item.name}</span><span>${item.price} ₽</span>`;
+                cartItems.appendChild(div);
+            });
+            cartTotal.textContent = `${total} ₽`;
+            cartCount.textContent = cart.length;
+        }
+
+        function openCart() {
+            document.getElementById('cart-modal').classList.remove('hidden');
+        }
+
+        function closeCart() {
+            document.getElementById('cart-modal').classList.add('hidden');
+        }
+
+        function renderProducts() {
+            const productGrid = document.getElementById('product-grid');
+            const featuredProducts = allProducts.slice(0, 6);
+            productGrid.innerHTML = '';
+            featuredProducts.forEach((product, index) => {
+                const div = document.createElement('div');
+                div.className = 'card bg-white rounded-lg shadow-lg p-6 fade-in';
+                div.style.animationDelay = `${index * 0.2}s`;
+                div.innerHTML = `
+                    <img src="${product.image}" alt="${product.name}" class="w-full h-48 object-cover rounded-md mb-4">
+                    <h3 class="text-xl font-semibold">${product.name}</h3>
+                    <p class="text-gray-600 mb-4">${product.description}</p>
+                    <p class="text-lg font-bold text-gray-800">${product.price} ₽</p>
+                    <button class="btn bg-gray-800 text-white px-4 py-2 rounded-lg mt-4 w-full" onclick="addToCart('${product.name}', ${product.price})">Добавить в корзину</button>
+                `;
+                productGrid.appendChild(div);
+            });
+        }
+
+        function searchProducts() {
+            const searchInput = document.getElementById('search-input').value.toLowerCase();
+            const searchResults = document.getElementById('search-results');
+            const searchModal = document.getElementById('search-modal');
+            const results = allProducts.filter(product =>
+                product.name.toLowerCase().includes(searchInput) ||
+                product.description.toLowerCase().includes(searchInput) ||
+                product.price.toString().includes(searchInput)
+            );
+            searchResults.innerHTML = '';
+            if (results.length === 0) {
+                searchResults.innerHTML = '<p class="text-gray-600">Ничего не найдено</p>';
+            } else {
+                results.forEach(product => {
+                    const div = document.createElement('div');
+                    div.className = 'bg-white rounded-lg shadow-lg p-4 mb-4 highlight';
+                    div.innerHTML = `
+                        <img src="${product.image}" alt="${product.name}" class="w-full h-32 object-cover rounded-md mb-2">
+                        <h3 class="text-lg font-semibold">${product.name}</h3>
+                        <p class="text-gray-600">${product.description}</p>
+                        <p class="text-lg font-bold text-gray-800">${product.price} ₽</p>
+                    `;
+                    searchResults.appendChild(div);
+                });
+            }
+            searchModal.classList.remove('hidden');
+        }
+
+        function closeSearchModal() {
+            document.getElementById('search-modal').classList.add('hidden');
+        }
+
+        function updateAutocomplete() {
+            const searchInput = document.getElementById('search-input').value.toLowerCase();
+            const autocompleteList = document.getElementById('autocomplete-list');
+            if (searchInput === '') {
+                autocompleteList.classList.add('hidden');
+                return;
+            }
+            const suggestions = allProducts.filter(product =>
+                product.name.toLowerCase().includes(searchInput) ||
+                product.description.toLowerCase().includes(searchInput)
+            ).map(product => product.name);
+            autocompleteList.innerHTML = '';
+            if (suggestions.length > 0) {
+                suggestions.slice(0, 5).forEach(suggestion => {
+                    const div = document.createElement('div');
+                    div.textContent = suggestion;
+                    div.onclick = () => {
+                        document
